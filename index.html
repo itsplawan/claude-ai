@@ -798,17 +798,30 @@
     </div>
 
     <script>
-        // Global state
-        const availableModels = [
-            { apiName: 'claude-sonnet-4', displayName: 'Claude Sonnet 4', shortName: 'Sonnet 4' },
-            { apiName: 'claude-opus-4', displayName: 'Claude Opus 4', shortName: 'Opus 4' },
-            { apiName: 'claude-3-7-sonnet', displayName: 'Claude 3.7 Sonnet', shortName: 'Sonnet 3.7' }
-        ];
-        let currentModel = availableModels[0].apiName;
-        let chatHistory = [];
-        let isStreaming = false;
-        let recentConversations = [];
-        let currentConversationId = null;
+     // Global state
+            const availableModels = [
+                {
+                    apiName: 'anthropic/claude-sonnet-4-6',
+                    displayName: 'Claude Sonnet 4.6',
+                    shortName: 'Sonnet 4.6'
+                },
+                {
+                    apiName: 'anthropic/claude-sonnet-4-5',
+                    displayName: 'Claude Sonnet 4.5',
+                    shortName: 'Sonnet 4.5'
+                },
+                {
+                    apiName: 'anthropic/claude-3-7-sonnet',
+                    displayName: 'Claude 3.7 Sonnet',
+                    shortName: 'Sonnet 3.7'
+                }
+            ];
+            
+            let currentModel = availableModels[0].apiName;
+            let chatHistory = [];
+            let isStreaming = false;
+            let recentConversations = [];
+            let currentConversationId = null;
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -816,6 +829,14 @@
             initializeInterface();
             updateModelDisplay();
             updateProtocolNotice();
+            console.log("Puter loaded:", typeof puter);
+            
+            try {
+                const models = await puter.ai.listModels();
+                console.log("Available models:", models);
+            } catch (e) {
+                console.error("Could not list models:", e);
+            }
         });
 
         function updateProtocolNotice() {
@@ -846,7 +867,7 @@
                 console.log('🔐 Manually triggering Puter authentication...');
                 
                 // Trigger authentication with a simple test call
-                const authResponse = await puter.ai.chat("test", {model: 'claude-sonnet-4'});
+                const authResponse = await puter.ai.chat("test", {model: 'claude-sonnet-4-6'});
                 
                 console.log('✅ Raw auth response:', authResponse);
 
