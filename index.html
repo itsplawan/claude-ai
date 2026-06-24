@@ -843,27 +843,29 @@
                     authButton.disabled = true;
                 }
                 
-                console.log('🔐 Manually triggering Puter authentication...');
-                
-                // Trigger authentication with a simple test call
-                const authResponse = await puter.ai.chat("test", {model: 'claude-sonnet-4'});
-                
-                console.log('✅ Raw auth response:', authResponse);
+              console.log('🔐 Manually triggering Puter authentication...');
 
-                // Check for a successful response structure
-                if (authResponse && (authResponse.message?.content || authResponse.success !== false)) {
-                     console.log('✅ Authentication successful!');
-                    if (authButton) {
-                        authButton.textContent = '✅ Authenticated';
-                        authButton.style.backgroundColor = '#22c55e';
-                        setTimeout(() => {
-                           const authBox = authButton.closest('div[style*="max-width: 600px"]');
-                           if(authBox) authBox.style.display = 'none';
-                        }, 2000);
-                    }
-                } else {
-                    throw new Error('Authentication response indicates failure.');
-                }
+await puter.auth.signIn();
+
+const signedIn = await puter.auth.isSignedIn();
+
+console.log('Signed in:', signedIn);
+
+if (signedIn) {
+    console.log('✅ Authentication successful!');
+
+    if (authButton) {
+        authButton.textContent = '✅ Authenticated';
+        authButton.style.backgroundColor = '#22c55e';
+
+        setTimeout(() => {
+            const authBox = authButton.closest('div[style*="max-width: 600px"]');
+            if (authBox) authBox.style.display = 'none';
+        }, 2000);
+    }
+} else {
+    throw new Error('User is not signed in.');
+}
                 
             } catch (error) {
                 console.error('❌ Manual authentication failed:', error);
