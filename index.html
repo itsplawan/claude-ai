@@ -1097,7 +1097,8 @@ If you are running this from a local server (like localhost), the issue is almos
                 isStreaming = true;
                 if (typeof puter === 'undefined') { throw new Error('Puter.js is not available.'); }
                 console.log('📡 Calling Puter AI with model:', currentModel, 'and full history.');
-                
+
+                console.log('CHAT HISTORY:', JSON.stringify(chatHistory, null, 2));
                 const response = await puter.ai.chat(chatHistory, {
                     model: currentModel,
                     stream: true
