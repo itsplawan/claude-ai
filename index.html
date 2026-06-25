@@ -702,32 +702,37 @@
                         Good morning, User!
                     </div>
                     
-                    <div class="search-container">
-                        <div class="search-container">     <textarea         class="search-input"         id="welcomeInput"         placeholder="Message Claude..."         rows="1"></textarea>      <div class="search-actions">         <button class="model-btn" id="modelSelector">             <span id="currentModel">Claude Sonnet 4.6</span>         </button>          <input             type="file"             id="welcomeFileInput"             style="display:none"             accept=".txt,.csv,.md,.xlsx,.xls,.pdf">          <button             class="model-btn"             id="welcomeUploadBtn"             title="Attach file">             📎         </button>          <button class="send-btn" id="sendBtn">             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>             </svg>         </button>     </div> </div> placeholder="How can I help you today?" rows="1"></textarea>
-                      <div class="search-actions">
-                            <button class="model-btn" id="chatModelSelector">
-                                <span id="chatCurrentModel">Sonnet 4.6</span>
+                   <div class="search-container">
+                        <textarea
+                            class="search-input"
+                            id="welcomeInput"
+                            placeholder="How can I help you today?"
+                            rows="1"></textarea>
+                    
+                        <div class="search-actions">
+                            <button class="model-btn" id="modelSelector">
+                                <span id="currentModel">Claude Sonnet 4.6</span>
                             </button>
-                        
+                    
                             <input
                                 type="file"
-                                id="fileInput"
+                                id="welcomeFileInput"
                                 style="display:none"
                                 accept=".txt,.csv,.md,.xlsx,.xls,.pdf">
-                        
+                    
                             <button
                                 class="model-btn"
-                                id="uploadBtn"
+                                id="welcomeUploadBtn"
                                 title="Attach file">
                                 📎
                             </button>
-                        
-                            <button class="send-btn" id="chatSendBtn">
+                    
+                            <button class="send-btn" id="sendBtn">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
                                 </svg>
                             </button>
-                        </div>                    
+                        </div>
                     </div>
                     
                     <div style="max-width: 600px; margin-bottom: 15px; padding: 12px; background-color: #2a2a2a; border-radius: 8px; border: 1px solid #404040;">
