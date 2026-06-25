@@ -785,6 +785,8 @@
                             <button class="model-btn" id="chatModelSelector" style="padding: 6px 8px; font-size: 12px;">
                                 <span id="chatCurrentModel">Sonnet 4.6</span>
                             </button>
+                            <input type="file" id="fileInput" style="display:none" accept=".txt,.csv,.md,.xlsx,.xls">
+                            <button class="model-btn" id="uploadBtn" style="padding:6px 8px;font-size:12px;">📎</button>
                             <button class="send-btn" id="chatSendBtn">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
@@ -796,6 +798,8 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
     <script>
         // Global state
@@ -816,6 +820,12 @@
         let isStreaming = false;
         let recentConversations = [];
         let currentConversationId = null;
+
+        let currentAttachment = null;
+        let currentAttachmentMeta = {
+            name: null,
+            type: null
+        };
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -843,6 +853,8 @@
 
         async function handleManualAuth() {
             const authButton = document.getElementById('authButton');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const fileInput = document.getElementById('fileInput');
             
             try {
                 if (authButton) {
@@ -918,6 +930,39 @@ If you are running this from a local server (like localhost), the issue is almos
             }
         }
 
+
+        async function processUploadedFile(file) {
+            if (!file) return;
+
+            const extension = file.name.split('.').pop().toLowerCase();
+
+            if (['txt','csv','md'].includes(extension)) {
+                currentAttachment = await file.text();
+            } else if (['xlsx','xls'].includes(extension)) {
+                const buffer = await file.arrayBuffer();
+                const workbook = XLSX.read(buffer);
+                let extractedText = '';
+
+                workbook.SheetNames.forEach(sheetName => {
+                    extractedText += `\n\n=== Sheet: ${sheetName} ===\n`;
+                    extractedText += XLSX.utils.sheet_to_csv(
+                        workbook.Sheets[sheetName]
+                    );
+                });
+
+                currentAttachment = extractedText;
+            } else {
+                throw new Error('Unsupported file type');
+            }
+
+            currentAttachmentMeta = {
+                name: file.name,
+                type: extension
+            };
+
+            alert(`Attached: ${file.name}`);
+        }
+
         function initializeInterface() {
             const welcomeInput = document.getElementById('welcomeInput');
             const chatInput = document.getElementById('chatInput');
@@ -927,6 +972,8 @@ If you are running this from a local server (like localhost), the issue is almos
             const actionBtns = document.querySelectorAll('.action-btn');
             const modelSelectors = document.querySelectorAll('#modelSelector, #chatModelSelector');
             const authButton = document.getElementById('authButton');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const fileInput = document.getElementById('fileInput');
 
             if (authButton) authButton.addEventListener('click', handleManualAuth);
 
@@ -961,6 +1008,18 @@ If you are running this from a local server (like localhost), the issue is almos
             modelSelectors.forEach(selector => {
                 if (selector) selector.addEventListener('click', toggleModel);
             });
+
+            if (uploadBtn && fileInput) {
+                uploadBtn.addEventListener('click', () => fileInput.click());
+
+                fileInput.addEventListener('change', async (e) => {
+                    try {
+                        await processUploadedFile(e.target.files[0]);
+                    } catch(err) {
+                        alert(err.message);
+                    }
+                });
+            }
 
             if (welcomeInput) welcomeInput.focus();
             console.log('✅ Interface initialized');
@@ -1098,7 +1157,28 @@ If you are running this from a local server (like localhost), the issue is almos
             showTypingIndicator();
             setInputState(false);
 
-            chatHistory.push({ role: 'user', content: message });
+            const requestHistory = [...chatHistory];
+
+            requestHistory.push({
+                role: 'user',
+                content: currentAttachment
+                    ? `Attached File:
+
+${currentAttachmentMeta.name}
+
+${currentAttachment}
+
+User Request:
+${message}`
+                    : message
+            });
+
+            chatHistory.push({
+                role: 'user',
+                content: currentAttachment
+                    ? `[Uploaded File: ${currentAttachmentMeta.name}] ${message}`
+                    : message
+            });
             
             try {
                 isStreaming = true;
@@ -1106,7 +1186,7 @@ If you are running this from a local server (like localhost), the issue is almos
                 console.log('📡 Calling Puter AI with model:', currentModel, 'and full history.');
 
                 console.log('CHAT HISTORY:', JSON.stringify(chatHistory, null, 2));
-                const response = await puter.ai.chat(chatHistory, {
+                const response = await puter.ai.chat(requestHistory, {
                     model: currentModel,
                     stream: true
                 });
@@ -1131,6 +1211,12 @@ If you are running this from a local server (like localhost), the issue is almos
                 renderFormattedMessage(fullResponse, messageContent); 
                 
                 chatHistory.push({ role: 'assistant', content: fullResponse });
+
+                currentAttachment = null;
+                currentAttachmentMeta = {
+                    name: null,
+                    type: null
+                };
                 updateCurrentConversation();
                 
             } catch (error) {
